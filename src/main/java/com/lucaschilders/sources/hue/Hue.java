@@ -1,17 +1,22 @@
 package com.lucaschilders.sources.hue;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
-import com.lucaschilders.pojos.RGB;
+import com.lucaschilders.pojos.Light;
 import com.lucaschilders.sources.Source;
 import com.lucaschilders.util.ConfigPath;
+import com.lucaschilders.util.URIBuilder;
 import com.lucaschilders.util.YAMLUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.naming.AuthenticationException;
+import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -23,8 +28,9 @@ public class Hue implements Source {
     private final HueConfig config;
 
     @Inject
-    public Hue(final HueConfig config) {
+    public Hue(final HueConfig config) throws Exception {
         this.config = config;
+        setup();
     }
 
     /**
@@ -34,24 +40,22 @@ public class Hue implements Source {
     public boolean setup() throws Exception {
         if (!Strings.isNullOrEmpty(this.config.token)) {
             LOGGER.info("Attempting to auth with existing token [{}]", this.config.token);
-            final HttpRequest testAccess = HttpRequest.newBuilder(URI.create(String.format("http://%s/api/%s/lights",
-                    this.config.internalIp, this.config.token)))
-                    .header("accept", "application/json")
-                    .header("Content-Type", "application/json")
-                    .GET()
-                    .build();
-            if (HttpClient.newHttpClient().send(testAccess, HttpResponse.BodyHandlers.ofString()).body().contains("unauthorized user")) {
-                LOGGER.warn("User is unauthorized, attempting to re-authorize as [{}]", this.config.deviceName);
-            } else {
+
+            /**
+             * Test authentication
+             */
+            try {
+                getLights();
                 return true;
+            } catch (final AuthenticationException ae) {
+                LOGGER.warn(ae.getMessage());
             }
         }
 
-        final Register register = new Register(this.config.deviceName);
         final HttpRequest authorize = HttpRequest.newBuilder(URI.create(String.format("http://%s/api", this.config.internalIp)))
                 .header("accept", "application/json")
                 .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(new ObjectMapper().writeValueAsString(register)))
+                .POST(HttpRequest.BodyPublishers.ofString(new JSONObject().put("devicetype", this.config.deviceName).toString()))
                 .build();
 
         for (int i = 0; i < this.config.retries; i++) {
@@ -80,28 +84,110 @@ public class Hue implements Source {
      * {@inheritDoc}
      */
     @Override
-    public Set<String> getLights() {
-        LOGGER.error("Method not implemented.");
-        return null;
+    public Set<Light> getLights() throws AuthenticationException, IOException, InterruptedException {
+        final URI uri = new URIBuilder.Builder()
+                .withHost(this.config.internalIp)
+                .withProtocol(URIBuilder.Protocol.HTTP)
+                .withSegment("api")
+                .withSegment(this.config.token)
+                .withSegment("lights")
+                .build().getUri();
+
+        final HttpResponse<String> response = makeGetRequest(uri);
+
+        final Set<Light> lights = Sets.newHashSet();
+        final JSONObject obj = new JSONObject(response.body());
+        for (final String key : obj.keySet()) {
+            lights.add(parseLight(key, obj));
+        }
+
+        return lights;
+    }
+
+    public Light getLight(final String id) throws AuthenticationException, IOException, InterruptedException {
+        final URI uri = new URIBuilder.Builder()
+                .withHost(this.config.internalIp)
+                .withProtocol(URIBuilder.Protocol.HTTP)
+                .withSegment("api")
+                .withSegment(this.config.token)
+                .withSegment("lights")
+                .withSegment(id)
+                .build().getUri();
+
+        final HttpResponse<String> response = makeGetRequest(uri);
+        return parseLight(id, response.body());
     }
 
     /**
      * {@inheritDoc}
      */
     @Override
-    public void setLight(final String id, final RGB rgb, final short brightness) {
-        LOGGER.error("Method not implemented.");
+    public void setBrightness(final String id, final int brightness) throws InterruptedException, IOException, AuthenticationException {
+        Preconditions.checkArgument(brightness >= 0 && brightness <= 100);
+        final HueLight light = (HueLight) getLight("id");
+        light.state.bri = brightness;
+        makeStateChange(id, light.state);
     }
 
     /**
-     * Helper for formatting the Philips Hue request
+     * {@inheritDoc}
      */
-    private static class Register {
-        @JsonProperty("devicetype")
-        public String name;
+    @Override
+    public void setLightPowerState(final String id, final boolean state) throws InterruptedException, IOException, AuthenticationException {
+        final HueLight light = (HueLight) getLight("id");
+        light.state.on = state;
+        makeStateChange(id, light.state);
+    }
 
-        public Register(final String name) {
-            this.name = name;
+    private HttpResponse<String> makeGetRequest(final URI uri) throws AuthenticationException, IOException, InterruptedException {
+        final HttpRequest request = HttpRequest.newBuilder(uri)
+                .header("accept", "application/json")
+                .header("Content-Type", "application/json")
+                .GET()
+                .build();
+
+        final HttpResponse<String> response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+
+        if (response.body().contains("unauthorized user")) {
+            throw new AuthenticationException(String.format("[%s] user was unauthenticated!", this.config.deviceName));
         }
+
+        return response;
+    }
+
+    private void makePutRequest(final URI uri, final String body) throws IOException, InterruptedException {
+        final HttpRequest request = HttpRequest.newBuilder(uri)
+                .header("accept", "application/json")
+                .header("Content-Type", "application/json")
+                .PUT(HttpRequest.BodyPublishers.ofString(body))
+                .build();
+
+        HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private void makeStateChange(final String id, final HueLight.State state) throws IOException, InterruptedException {
+        final URI uri = new URIBuilder.Builder()
+                .withHost(this.config.internalIp)
+                .withProtocol(URIBuilder.Protocol.HTTP)
+                .withSegment("api")
+                .withSegment(this.config.token)
+                .withSegment("lights")
+                .withSegment(id)
+                .withSegment("state")
+                .build().getUri();
+
+        makePutRequest(uri, new ObjectMapper().writeValueAsString(state));
+    }
+
+    private static HueLight parseLight(final String id, final String body) throws JsonProcessingException {
+        final HueLight light = new ObjectMapper().readValue(body, HueLight.class);
+        light.id = id;
+        return light;
+    }
+
+    private static HueLight parseLight(final String id, final JSONObject obj) throws JsonProcessingException {
+        final HueLight light = new ObjectMapper().readValue(obj.get(id).toString(), HueLight.class);
+        light.id = id;
+        return light;
     }
 }

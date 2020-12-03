@@ -11,18 +11,28 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Set;
 
-public class ServeLight {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ServeLight.class);
+public class ServeLights {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServeLights.class);
 
     final Set<Source> sources;
 
     @Inject
-    public ServeLight(final Hue hue) {
+    public ServeLights(final Hue hue) {
         LOGGER.info("Bootstrapping ServeLight.");
         this.sources = Sets.newHashSet();
         this.sources.add(hue);
 
-        setup();
+        for (final Source source : sources) {
+            try {
+                if (source.getLight("1").getPowerState()) {
+                    source.setLightPowerState("1", false);
+                } else {
+                    source.setLightPowerState("1", true);
+                }
+            } catch (final Exception e) {
+                LOGGER.error(e.getMessage(), e);
+            }
+        }
     }
 
     private void setup() {
@@ -40,6 +50,6 @@ public class ServeLight {
     }
 
     public static void main(String[] args) {
-        Guice.createInjector(new ServeLightModule()).getInstance(ServeLight.class);
+        Guice.createInjector(new ServeLightModule()).getInstance(ServeLights.class);
     }
 }

@@ -6,8 +6,6 @@ name: Java CI with Maven
 on:
   push:
     branches: [ master ]
-  pull_request:
-    branches: [ master ]
 
 jobs:
   build:
@@ -22,3 +20,7 @@ jobs:
         java-version: 11
     - name: Build with Maven
       run: mvn clean compile assembly:single
+    - uses: actions/upload-artifact@v2
+      with:
+        name: serve-lights.jar
+        path: target/serve-lights.jar

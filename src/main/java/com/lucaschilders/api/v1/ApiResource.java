@@ -67,7 +67,7 @@ public class ApiResource {
     public Route setBrightnessAll(final Request request) {
         ApiResource.logRequest(request);
         try {
-            store.setBrightnessAll(Integer.valueOf(request.queryParams(BRIGHTNESS)));
+            store.setBrightnessAll(Integer.parseInt(request.queryParams(BRIGHTNESS)));
             return ApiResource.ok();
         } catch (final Exception e) {
             return bad(500, e.getMessage());
@@ -78,7 +78,7 @@ public class ApiResource {
         ApiResource.logRequest(request);
         try {
             store.setBrightnessSingle(ProviderName.classify(request.queryParams(PROVIDER)),
-                    request.queryParams(ID), Integer.valueOf(request.queryParams(BRIGHTNESS)));
+                    request.queryParams(ID), Integer.parseInt(request.queryParams(BRIGHTNESS)));
             return ApiResource.ok();
         } catch (final Exception e) {
             return bad(500, e.getMessage());

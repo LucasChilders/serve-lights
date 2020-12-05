@@ -13,6 +13,9 @@ import org.slf4j.LoggerFactory;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Used by the ApiResource to interact with lights
+ */
 public class ApiStore {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiStore.class);
 
@@ -25,9 +28,9 @@ public class ApiStore {
 
     /**
      * Return information for all known lights
-     * @return
+     * @return String JSON list of lights
      */
-    final String getLights() {
+    protected String getLights() {
         final JSONArray lights = new JSONArray();
         for (final Map.Entry<ProviderName, Provider<?, ?>> entry : providers.entrySet()) {
             try {
@@ -46,11 +49,11 @@ public class ApiStore {
 
     /**
      * Return information about a single light
-     * @param providerName
-     * @param id
-     * @return
+     * @param providerName target provider
+     * @param id target light id
+     * @return String JSON object of light
      */
-    final String getLight(final ProviderName providerName, final String id) {
+    protected String getLight(final ProviderName providerName, final String id) {
         Preconditions.checkNotNull(providerName);
         Preconditions.checkNotNull(id);
         try {
@@ -66,9 +69,9 @@ public class ApiStore {
 
     /**
      * Update the state of all lights
-     * @param state
+     * @param state state to set to: on / off
      */
-    final void setStateAll(final String state) {
+    protected void setStateAll(final String state) {
         Preconditions.checkNotNull(state);
         for (final Map.Entry<ProviderName, Provider<?, ?>> entry : providers.entrySet()) {
             try {
@@ -93,11 +96,11 @@ public class ApiStore {
 
     /**
      * Update the state of a single light
-     * @param providerName
-     * @param id
-     * @param state
+     * @param providerName target provider
+     * @param id target light id
+     * @param state state to set to: on / off
      */
-    final void setStateSingle(final ProviderName providerName, final String id, final String state) {
+    protected void setStateSingle(final ProviderName providerName, final String id, final String state) {
         Preconditions.checkNotNull(providerName);
         Preconditions.checkNotNull(id);
         Preconditions.checkNotNull(state);
@@ -113,9 +116,9 @@ public class ApiStore {
 
     /**
      * Update the state of all lights
-     * @param brightness
+     * @param brightness between 0 and 100
      */
-    final void setBrightnessAll(final int brightness) {
+    protected void setBrightnessAll(final int brightness) {
         Preconditions.checkArgument(brightness >= 0 && brightness <= 100);
         for (final Map.Entry<ProviderName, Provider<?, ?>> entry : providers.entrySet()) {
             try {
@@ -140,11 +143,11 @@ public class ApiStore {
 
     /**
      * Update the brightness of a single light
-     * @param providerName
-     * @param id
-     * @param brightness
+     * @param providerName target provider
+     * @param id target light id
+     * @param brightness between 0 and 100
      */
-    final void setBrightnessSingle(final ProviderName providerName, final String id, final int brightness) {
+    protected void setBrightnessSingle(final ProviderName providerName, final String id, final int brightness) {
         Preconditions.checkNotNull(providerName);
         Preconditions.checkNotNull(id);
         Preconditions.checkArgument(brightness >= 0 && brightness <= 100);

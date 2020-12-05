@@ -37,9 +37,6 @@ public class Hue extends Provider<HueConfig, HueLight> {
         if (!Strings.isNullOrEmpty(this.config.token)) {
             LOGGER.info("Attempting to auth with existing token [{}]", this.config.token);
 
-            /**
-             * Test authentication
-             */
             try {
                 getLights();
                 return true;
@@ -48,14 +45,13 @@ public class Hue extends Provider<HueConfig, HueLight> {
             }
         }
 
-        final HttpRequest authorize = HttpRequest.newBuilder(URI.create(String.format("http://%s/api", this.config.internalIp)))
-                .header("accept", "application/json")
-                .header("Content-Type", "application/json")
-                .POST(HttpRequest.BodyPublishers.ofString(new JSONObject().put("devicetype", this.config.deviceName).toString()))
-                .build();
-
         for (int i = 0; i < this.config.retries; i++) {
-            final HttpResponse<String> response = HttpClient.newHttpClient().send(authorize, HttpResponse.BodyHandlers.ofString());
+            final HttpResponse<String> response = makePostRequest(new URIBuilder.Builder()
+                    .withProtocol(URIBuilder.Protocol.HTTP)
+                    .withHost(this.config.internalIp)
+                    .withSegment("api")
+                    .build()
+                    .getUri(), new JSONObject().put("devicetype", this.config.deviceName).toString());
             if (response.body().contains("link button not pressed")) {
                 if (i == 0) {
                     LOGGER.warn("Philips Hue requires physical interaction with the bridge device, press the link button on the bridge.");
@@ -137,6 +133,14 @@ public class Hue extends Provider<HueConfig, HueLight> {
         makeStateChange(id, light.state);
     }
 
+    /**
+     * Helper method to make an HTTP get request
+     * @param uri uri to make a request to
+     * @return HttpResponse<String>
+     * @throws AuthenticationException
+     * @throws IOException
+     * @throws InterruptedException
+     */
     private HttpResponse<String> makeGetRequest(final URI uri) throws AuthenticationException, IOException, InterruptedException {
         final HttpRequest request = HttpRequest.newBuilder(uri)
                 .header("accept", "application/json")
@@ -153,6 +157,31 @@ public class Hue extends Provider<HueConfig, HueLight> {
         return response;
     }
 
+    /**
+     * Helper method to make an HTTP POST request
+     * @param uri uri to make a request to
+     * @param body body of the POST request
+     * @throws IOException
+     * @throws InterruptedException
+     * @return HttpResponse<String>
+     */
+    private HttpResponse<String> makePostRequest(final URI uri, final String body) throws IOException, InterruptedException {
+        final HttpRequest request = HttpRequest.newBuilder(uri)
+                .header("accept", "application/json")
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(body))
+                .build();
+
+        return HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    /**
+     * Helper method to make an HTTP PUT request
+     * @param uri uri to make a request to
+     * @param body body of the PUT request
+     * @throws IOException
+     * @throws InterruptedException
+     */
     private void makePutRequest(final URI uri, final String body) throws IOException, InterruptedException {
         final HttpRequest request = HttpRequest.newBuilder(uri)
                 .header("accept", "application/json")

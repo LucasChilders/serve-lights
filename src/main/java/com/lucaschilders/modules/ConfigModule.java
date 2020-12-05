@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 public class ConfigModule extends AbstractModule {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConfigModule.class);
-    public static final String BASE_PATH = String.format("%s/%%s.yaml", System.getenv("SERVE_LIGHT_CONFIG_DIR"));
+    public static final String BASE_PATH = String.format("%s/%%s.yaml", System.getProperty("config_dir"));
 
     @Override
     protected void configure() {}

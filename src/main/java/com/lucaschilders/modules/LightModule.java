@@ -22,8 +22,8 @@ public class LightModule extends AbstractModule {
     @Singleton
     @Provides
     @Named("providers")
-    public HashMap<ProviderName, Provider> getProviders(final Hue hue) {
-        final HashMap<ProviderName, Provider> providers = Maps.newHashMap();
+    public HashMap<ProviderName, Provider<?, ?>> getProviders(final Hue hue) {
+        final HashMap<ProviderName, Provider<?, ?>> providers = Maps.newHashMap();
         providers.put(ProviderName.HUE, hue);
         return providers;
     }

@@ -1,5 +1,8 @@
 # serve-lights
 
+![build](https://github.com/LucasChilders/serve-lights/workflows/build/badge.svg)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/lucaschilders/serve-lights)
+
 This project provides a single interface to control multiple providers of smart lights. This enables you to easily 
 write complex home automation with a single light control implementation. The list of currently supported lights can 
 be found [below](#provider-support). 

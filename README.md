@@ -41,6 +41,6 @@ linked below under [Provider Support](#provider-support). All configurations mus
 - cache list of lights
 - tests
   - verify providers have guice @provides methods 
-- ci build to push tagged releases
++ ci build to push tagged releases
 - documentation for contributing
 ```

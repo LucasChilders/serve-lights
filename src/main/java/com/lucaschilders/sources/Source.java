@@ -31,7 +31,7 @@ public interface Source {
 
     /**
      *
-     * SETTERS
+     * STATE UPDATES
      *
      * The following methods make state changes to lights
      *

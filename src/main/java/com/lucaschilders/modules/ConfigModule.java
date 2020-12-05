@@ -4,12 +4,10 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.lucaschilders.providers.hue.HueConfig;
-import com.lucaschilders.util.ConfigPath;
+import com.lucaschilders.util.ProviderName;
 import com.lucaschilders.util.YAMLUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.IOException;
 
 public class ConfigModule extends AbstractModule {
     private static final Logger LOGGER = LoggerFactory.getLogger(ConfigModule.class);
@@ -20,8 +18,8 @@ public class ConfigModule extends AbstractModule {
 
     @Provides
     @Singleton
-    public HueConfig getHueConfig() throws IOException {
-        LOGGER.info("Loading [{}] for Hue", ConfigPath.HUE.getPath());
-        return YAMLUtils.read(ConfigPath.HUE, HueConfig.class);
+    public HueConfig getHueConfig() throws Exception {
+        LOGGER.info("Loading [{}] for Hue", ProviderName.HUE.getPath());
+        return YAMLUtils.read(ProviderName.HUE, HueConfig.class);
     }
 }

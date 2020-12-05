@@ -4,11 +4,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.lucaschilders.pojos.Light;
 import com.lucaschilders.pojos.RGB;
+import com.lucaschilders.util.ProviderName;
 
 import java.util.List;
 
 public class HueLight extends Light {
     public String id;
+    @JsonProperty("name")
     public String name;
     public State state;
     @JsonProperty("swupdate")
@@ -93,13 +95,16 @@ public class HueLight extends Light {
     }
 
     @JsonIgnore
-    @Override
+    public ProviderName getProviderName() {
+        return ProviderName.HUE;
+    }
+
+    @JsonIgnore
     public String getId() {
         return this.id;
     }
 
     @JsonIgnore
-    @Override
     public String getName() {
         return this.name;
     }

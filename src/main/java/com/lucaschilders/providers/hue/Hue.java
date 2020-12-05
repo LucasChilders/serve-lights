@@ -7,7 +7,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.lucaschilders.providers.Provider;
-import com.lucaschilders.util.ConfigPath;
+import com.lucaschilders.util.ProviderName;
 import com.lucaschilders.util.URIBuilder;
 import com.lucaschilders.util.YAMLUtils;
 import org.json.JSONObject;
@@ -69,7 +69,7 @@ public class Hue extends Provider<HueConfig, HueLight> {
             } else if (response.body().contains("success") && response.body().contains("username")) {
                 this.config.token = new JSONObject(response.body().split("\\[")[1].split("]")[0])
                         .getJSONObject("success").getString("username");
-                YAMLUtils.update(ConfigPath.HUE, this.config);
+                YAMLUtils.update(ProviderName.HUE, this.config);
                 return true;
             }
         }
@@ -93,7 +93,9 @@ public class Hue extends Provider<HueConfig, HueLight> {
         final Set<HueLight> lights = Sets.newHashSet();
         final JSONObject obj = new JSONObject(response.body());
         for (final String key : obj.keySet()) {
-            lights.add(parseLight(key, obj));
+            if (this.config.lights.contains(key)) {
+                lights.add(parseLight(key, obj));
+            }
         }
 
         return lights;

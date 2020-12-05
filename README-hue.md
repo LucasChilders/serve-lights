@@ -1,5 +1,7 @@
 # Philips Hue Configuration Guide
 
+As with all other providers, this configuration **must** also include the required values in [README-provider.md](README-provider.md).
+
 ## Required values
 - `internalIp`
     - the internal IP address of your Hue bridge found here: [Hue Broker Server](https://discovery.meethue.com/)

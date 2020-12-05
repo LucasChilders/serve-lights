@@ -1,15 +1,11 @@
 package com.lucaschilders.providers;
 
 import com.lucaschilders.pojos.Light;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.naming.AuthenticationException;
 import java.util.Set;
 
 public abstract class Provider<T extends ProviderConfig, L extends Light> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Provider.class);
-
     protected final T config;
 
     public Provider(final T config) throws AuthenticationException {
@@ -30,7 +26,7 @@ public abstract class Provider<T extends ProviderConfig, L extends Light> {
     public abstract boolean setup() throws Exception;
 
     /**
-     * Returns information about all lights
+     * Returns information about all lights that were provided in the config.lights list.
      * @return Set<Light>
      * @throws Exception
      */

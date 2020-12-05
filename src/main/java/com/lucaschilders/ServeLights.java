@@ -1,6 +1,5 @@
 package com.lucaschilders;
 
-import com.google.gson.Gson;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.lucaschilders.api.v1.ApiResource;
@@ -16,13 +15,11 @@ import static spark.Spark.*;
 public class ServeLights {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServeLights.class);
 
-    private final Gson gson;
     private final ApiResource resource;
 
     @Inject
     public ServeLights(final ApiResource resource) {
         LOGGER.info("Bootstrapping ServeLight.");
-        this.gson = new Gson();
         this.resource = resource;
         createRoutes();
     }
@@ -32,6 +29,11 @@ public class ServeLights {
 
         path("/api/v1", () -> {
             get("/lights", map((req, res) -> resource.getLights(req)));
+            post("/light", map((req, res) -> resource.getLight(req)));
+            post("/setStateAll", map((req, res) -> resource.setStateAll(req)));
+            post("/setStateSingle", map((req, res) -> resource.setStateSingle(req)));
+            post("/setBrightnessAll", map((req, res) -> resource.setBrightnessAll(req)));
+            post("/setBrightnessSingle", map((req, res) -> resource.setBrightnessSingle(req)));
         });
 
         get("*", map((req, res) -> resource.error()));

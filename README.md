@@ -15,7 +15,7 @@ provider.
 Set an environment variable `SERVE_LIGHT_CONFIG_DIR` with the path to a directory where your configuration files are 
 stored. Configuration files are named `<provider>.yaml`. The provider is the lower-cased simple class name, i.e. Hue.java -> 
 `hue.lifx`. Each provider has its own unique configurations, check each `README-<provider>.md` linked below under 
-[Provider Support](#provider-support)
+[Provider Support](#provider-support). All configurations must also define the values in [README-provider.md](README-provider.md).
 
 <a name="provider-support"></a>
 ## Provider Support

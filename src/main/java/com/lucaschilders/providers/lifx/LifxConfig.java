@@ -1,4 +1,4 @@
-package com.lucaschilders.sources.lifx;
+package com.lucaschilders.providers.lifx;
 
 import java.util.Set;
 

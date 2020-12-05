@@ -12,15 +12,14 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 public class ApiStore {
     private static final Logger LOGGER = LoggerFactory.getLogger(ApiStore.class);
 
-    private final HashMap<ProviderName, Provider> providers;
+    private final HashMap<ProviderName, Provider<?, ?>> providers;
 
     @Inject
-    public ApiStore(@Named("providers") final HashMap<ProviderName, Provider> providers) {
+    public ApiStore(@Named("providers") final HashMap<ProviderName, Provider<?, ?>> providers) {
         this.providers = providers;
     }
 
@@ -30,9 +29,9 @@ public class ApiStore {
      */
     final String getLights() {
         final JSONArray lights = new JSONArray();
-        for (final Map.Entry<ProviderName, Provider> entry : providers.entrySet()) {
+        for (final Map.Entry<ProviderName, Provider<?, ?>> entry : providers.entrySet()) {
             try {
-                for (final Light light : (Set<Light>) entry.getValue().getLights()) {
+                for (final Light light : entry.getValue().getLights()) {
                     lights.put(light.getJson());
                 }
             } catch (final Exception e) {
@@ -71,11 +70,11 @@ public class ApiStore {
      */
     final void setStateAll(final String state) {
         Preconditions.checkNotNull(state);
-        for (final Map.Entry<ProviderName, Provider> entry : providers.entrySet()) {
+        for (final Map.Entry<ProviderName, Provider<?, ?>> entry : providers.entrySet()) {
             try {
-                for (final Light light : (Set<Light>) entry.getValue().getLights()) {
+                for (final Light light : entry.getValue().getLights()) {
                     try {
-                        entry.getValue().setLightPowerState(light.getId(), state.equalsIgnoreCase("on") ? true : false);
+                        entry.getValue().setLightPowerState(light.getId(), state.equalsIgnoreCase("on"));
                     } catch (final Exception e) {
                         final String message = String.format("Failed to update state for %s",
                                 entry.getValue().getClass().getSimpleName());
@@ -103,7 +102,7 @@ public class ApiStore {
         Preconditions.checkNotNull(id);
         Preconditions.checkNotNull(state);
         try {
-            providers.get(providerName).setLightPowerState(id, state.equalsIgnoreCase("on") ? true : false);
+            providers.get(providerName).setLightPowerState(id, state.equalsIgnoreCase("on"));
         } catch (final Exception e) {
             final String message = String.format("Failed to fetch information for %s:%s",
                     providerName.getName(), id);
@@ -118,9 +117,9 @@ public class ApiStore {
      */
     final void setBrightnessAll(final int brightness) {
         Preconditions.checkArgument(brightness >= 0 && brightness <= 100);
-        for (final Map.Entry<ProviderName, Provider> entry : providers.entrySet()) {
+        for (final Map.Entry<ProviderName, Provider<?, ?>> entry : providers.entrySet()) {
             try {
-                for (final Light light : (Set<Light>) entry.getValue().getLights()) {
+                for (final Light light : entry.getValue().getLights()) {
                     try {
                         entry.getValue().setBrightness(light.getId(), brightness);
                     } catch (final Exception e) {

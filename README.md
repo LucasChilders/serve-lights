@@ -31,7 +31,9 @@ stored. Configuration files are named `<provider>.yaml`. The provider is the low
 ## todo
 ```diff
 + abstract provider setup
-- web server to control lights
++ web server to control lights
+- support as a source for Google Home (https://developers.google.com/assistant/sdk/device-actions-overview), etc. 
+- logging
 - cache list of lights
 - tests
 - documentation for contributing

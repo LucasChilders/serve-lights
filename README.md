@@ -24,9 +24,12 @@ stored. Configuration files are named `<provider>.yaml`. The provider is the low
 - Hue
     - [config](README-hue.md)
 
-## todo
-
-```diff
+### coming soon / in progress
 - LIFX
 - Nanoleaf
+
+## todo
+```diff
++ abstract provider setup
+- web server to control lights
 ```

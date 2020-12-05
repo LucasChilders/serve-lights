@@ -1,4 +1,4 @@
-package com.lucaschilders.sources.hue;
+package com.lucaschilders.providers.hue;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -7,7 +7,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.lucaschilders.pojos.Light;
-import com.lucaschilders.sources.Source;
+import com.lucaschilders.providers.Provider;
 import com.lucaschilders.util.ConfigPath;
 import com.lucaschilders.util.URIBuilder;
 import com.lucaschilders.util.YAMLUtils;
@@ -23,20 +23,17 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Set;
 
-public class Hue implements Source {
+public class Hue extends Provider<HueConfig, HueLight> {
     private static final Logger LOGGER = LoggerFactory.getLogger(Hue.class);
-    private final HueConfig config;
 
     @Inject
     public Hue(final HueConfig config) throws Exception {
-        this.config = config;
-        setup();
+        super(config);
     }
 
     /**
      * {@inheritDoc}
      */
-    @Override
     public boolean setup() throws Exception {
         if (!Strings.isNullOrEmpty(this.config.token)) {
             LOGGER.info("Attempting to auth with existing token [{}]", this.config.token);
@@ -83,8 +80,7 @@ public class Hue implements Source {
     /**
      * {@inheritDoc}
      */
-    @Override
-    public Set<Light> getLights() throws AuthenticationException, IOException, InterruptedException {
+    public Set<HueLight> getLights() throws AuthenticationException, IOException, InterruptedException {
         final URI uri = new URIBuilder.Builder()
                 .withHost(this.config.internalIp)
                 .withProtocol(URIBuilder.Protocol.HTTP)
@@ -95,7 +91,7 @@ public class Hue implements Source {
 
         final HttpResponse<String> response = makeGetRequest(uri);
 
-        final Set<Light> lights = Sets.newHashSet();
+        final Set<HueLight> lights = Sets.newHashSet();
         final JSONObject obj = new JSONObject(response.body());
         for (final String key : obj.keySet()) {
             lights.add(parseLight(key, obj));
@@ -104,7 +100,7 @@ public class Hue implements Source {
         return lights;
     }
 
-    public Light getLight(final String id) throws AuthenticationException, IOException, InterruptedException {
+    public HueLight getLight(final String id) throws AuthenticationException, IOException, InterruptedException {
         final URI uri = new URIBuilder.Builder()
                 .withHost(this.config.internalIp)
                 .withProtocol(URIBuilder.Protocol.HTTP)
@@ -121,10 +117,9 @@ public class Hue implements Source {
     /**
      * {@inheritDoc}
      */
-    @Override
     public void setBrightness(final String id, final int brightness) throws InterruptedException, IOException, AuthenticationException {
         Preconditions.checkArgument(brightness >= 0 && brightness <= 100);
-        final HueLight light = (HueLight) getLight(id);
+        final HueLight light = getLight(id);
         light.state.bri = brightness;
         makeStateChange(id, light.state);
     }
@@ -132,9 +127,8 @@ public class Hue implements Source {
     /**
      * {@inheritDoc}
      */
-    @Override
     public void setLightPowerState(final String id, final boolean state) throws InterruptedException, IOException, AuthenticationException {
-        final HueLight light = (HueLight) getLight(id);
+        final HueLight light = getLight(id);
         light.state.on = state;
         makeStateChange(id, light.state);
     }

@@ -1,6 +1,8 @@
-package com.lucaschilders.sources.hue;
+package com.lucaschilders.providers.hue;
 
-public class HueConfig {
+import com.lucaschilders.providers.ProviderConfig;
+
+public class HueConfig implements ProviderConfig {
     public String internalIp;
     public String deviceName;
     public String token;

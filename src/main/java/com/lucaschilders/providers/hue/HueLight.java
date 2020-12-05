@@ -1,4 +1,4 @@
-package com.lucaschilders.sources.hue;
+package com.lucaschilders.providers.hue;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;

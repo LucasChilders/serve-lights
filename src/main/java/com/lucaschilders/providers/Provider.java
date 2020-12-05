@@ -1,32 +1,37 @@
-package com.lucaschilders.sources;
+package com.lucaschilders.providers;
 
 import com.lucaschilders.pojos.Light;
 
 import java.util.Set;
 
-public interface Source {
+public abstract class Provider<T extends ProviderConfig, L extends Light> {
+    protected final T config;
+
+    public Provider(final T config) {
+        this.config = config;
+    }
 
     /**
      * Setup should do the necessary steps in order for the other methods in this interface to operate correctly. Think
      * auth, requesting tokens, etc.
      * @throws Exception
      */
-    boolean setup() throws Exception;
+    public abstract boolean setup() throws Exception;
 
     /**
      * Returns information about all lights
      * @return Set<Light>
      * @throws Exception
      */
-    Set<Light> getLights() throws Exception;
+    public abstract Set<L> getLights() throws Exception;
 
     /**
      * Returns information about a single light for a given id
-     * @param id
+     * @param id id of the light
      * @return Light
      * @throws Exception
      */
-    Light getLight(final String id) throws Exception;
+    public abstract L getLight(final String id) throws Exception;
 
 
     /**
@@ -43,12 +48,12 @@ public interface Source {
      * @param brightness between 0 and 100
      * @throws Exception
      */
-    void setBrightness(final String id, final int brightness) throws Exception;
+    public abstract void setBrightness(final String id, final int brightness) throws Exception;
 
     /**
      * Sets the state of the light
      * @param id
      * @param state true / false == on / off
      */
-    void setLightPowerState(final String id, final boolean state) throws Exception;
+    public abstract void setLightPowerState(final String id, final boolean state) throws Exception;
 }

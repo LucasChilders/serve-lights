@@ -13,9 +13,11 @@ provider.
 ## Configure
 
 Set the VM option `-Dconfig_dir` with the path to a directory where your configuration files are 
-stored. Configuration files are named `<provider>.yaml`. The provider is the lower-cased simple class name, i.e. Hue.java -> 
-`hue.lifx`. Each provider has its own unique configurations, check each `README-<provider>.md` linked below under 
-[Provider Support](#provider-support). All configurations must also define the values in [README-provider.md](README-provider.md).
+stored. Global configurations should be in `global.yaml` (see [Global Configurations](README-global.md)). Individual 
+provider configuration files are named `<provider>.yaml`. The provider is the lower-cased simple class name, 
+i.e. Hue.java ->`hue.lifx`. Each provider has its own unique configurations, check each `README-<provider>.md` 
+linked below under [Provider Support](#provider-support). All configurations must also define the values in 
+[README-provider.md](README-provider.md).
 
 <a name="provider-support"></a>
 ## Provider Support
@@ -32,9 +34,13 @@ stored. Configuration files are named `<provider>.yaml`. The provider is the low
 ```diff
 + abstract provider setup
 + web server to control lights
++ provider configuration
++ global configuration
 - support as a source for Google Home (https://developers.google.com/assistant/sdk/device-actions-overview), etc. 
 - logging
 - cache list of lights
 - tests
+  - verify providers have guice @provides methods 
+- ci build to push tagged releases
 - documentation for contributing
 ```

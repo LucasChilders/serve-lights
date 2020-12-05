@@ -3,6 +3,7 @@ package com.lucaschilders.util;
 import com.lucaschilders.modules.ConfigModule;
 
 public enum ProviderName {
+    GLOBAL,
     HUE,
     LIFX,
     NANOLEAF;

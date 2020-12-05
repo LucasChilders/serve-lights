@@ -20,6 +20,8 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 11
+    - name: Test with Maven
+      run: mvn clean install test
     - name: Build with Maven
       run: mvn clean compile assembly:single
     - uses: actions/upload-artifact@v2

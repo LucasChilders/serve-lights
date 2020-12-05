@@ -2,13 +2,20 @@ package com.lucaschilders;
 
 import com.google.inject.Guice;
 import com.google.inject.Inject;
+import com.google.inject.name.Named;
 import com.lucaschilders.api.v1.ApiResource;
 import com.lucaschilders.modules.ServeLightModule;
+import com.lucaschilders.pojos.GlobalConfig;
+import com.lucaschilders.providers.Provider;
+import com.lucaschilders.util.ProviderName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import spark.Request;
 import spark.Response;
 import spark.Route;
+
+import javax.naming.AuthenticationException;
+import java.util.HashMap;
 
 import static spark.Spark.*;
 
@@ -16,16 +23,37 @@ public class ServeLights {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServeLights.class);
 
     private final ApiResource resource;
+    private final GlobalConfig globalConfig;
+    private final HashMap<ProviderName, Provider<?, ?>> providers;
 
     @Inject
-    public ServeLights(final ApiResource resource) {
+    public ServeLights(final ApiResource resource,
+                       final GlobalConfig globalConfig,
+                       @Named("providers") final HashMap<ProviderName, Provider<?, ?>> providers)
+            throws AuthenticationException {
         LOGGER.info("Bootstrapping ServeLight.");
         this.resource = resource;
+        this.globalConfig = globalConfig;
+        this.providers = providers;
+        setupAll(providers);
         createRoutes();
     }
 
+    private static void setupAll(final HashMap<ProviderName, Provider<?, ?>> providers) throws AuthenticationException {
+        for (final Provider<?, ?> provider : providers.values()) {
+            try {
+                if (!provider.setup()) {
+                    LOGGER.error("Failed to setup [{}].", provider.getClass().getSimpleName());
+                }
+            } catch (final Exception e) {
+                throw new AuthenticationException(String.format("Failed to authenticate [%s], check the configuration.",
+                        provider.getClass().getSimpleName()));
+            }
+        }
+    }
+
     private void createRoutes() {
-        port(1500);
+        port(this.globalConfig.port);
 
         path("/api/v1", () -> {
             get("/lights", map((req, res) -> resource.getLights(req)));

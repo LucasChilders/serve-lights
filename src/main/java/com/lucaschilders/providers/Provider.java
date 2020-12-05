@@ -1,10 +1,8 @@
 package com.lucaschilders.providers;
 
 import com.lucaschilders.pojos.Light;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.lucaschilders.util.YAMLUtils;
 
-import javax.naming.AuthenticationException;
 import java.util.Set;
 
 /**
@@ -13,20 +11,13 @@ import java.util.Set;
  * @param <L> the provider specific light pojo
  */
 public abstract class Provider<T extends ProviderConfig, L extends Light> {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Provider.class);
 
+    protected final YAMLUtils yamlUtils;
     protected final T config;
 
-    public Provider(final T config) throws AuthenticationException {
+    public Provider(final YAMLUtils yamlUtils, final T config) {
+        this.yamlUtils = yamlUtils;
         this.config = config;
-        try {
-            if (!setup()) {
-                LOGGER.error("Failed to setup [{}].", this.getClass().getSimpleName());
-            }
-        } catch (final Exception e) {
-            throw new AuthenticationException(String.format("Failed to authenticate [%s], check the configuration.",
-                    this.getClass().getSimpleName()));
-        }
     }
 
     /**

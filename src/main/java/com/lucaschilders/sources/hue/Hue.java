@@ -124,7 +124,7 @@ public class Hue implements Source {
     @Override
     public void setBrightness(final String id, final int brightness) throws InterruptedException, IOException, AuthenticationException {
         Preconditions.checkArgument(brightness >= 0 && brightness <= 100);
-        final HueLight light = (HueLight) getLight("id");
+        final HueLight light = (HueLight) getLight(id);
         light.state.bri = brightness;
         makeStateChange(id, light.state);
     }
@@ -134,7 +134,7 @@ public class Hue implements Source {
      */
     @Override
     public void setLightPowerState(final String id, final boolean state) throws InterruptedException, IOException, AuthenticationException {
-        final HueLight light = (HueLight) getLight("id");
+        final HueLight light = (HueLight) getLight(id);
         light.state.on = state;
         makeStateChange(id, light.state);
     }

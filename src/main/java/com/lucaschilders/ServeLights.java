@@ -1,34 +1,49 @@
 package com.lucaschilders;
 
-import com.google.common.collect.Sets;
+import com.google.gson.Gson;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
+import com.lucaschilders.api.v1.ApiResource;
 import com.lucaschilders.modules.ServeLightModule;
-import com.lucaschilders.providers.Provider;
-import com.lucaschilders.providers.hue.Hue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import spark.Request;
+import spark.Response;
+import spark.Route;
 
-import java.util.Set;
+import static spark.Spark.*;
 
 public class ServeLights {
     private static final Logger LOGGER = LoggerFactory.getLogger(ServeLights.class);
 
-    final Set<Provider> sources;
+    private final Gson gson;
+    private final ApiResource resource;
 
     @Inject
-    public ServeLights(final Hue hue) {
+    public ServeLights(final ApiResource resource) {
         LOGGER.info("Bootstrapping ServeLight.");
-        this.sources = Sets.newHashSet();
-        this.sources.add(hue);
+        this.gson = new Gson();
+        this.resource = resource;
+        createRoutes();
+    }
 
-        for (final Provider source : sources) {
-            try {
-                source.setLightPowerState("1", !source.getLight("1").getPowerState());
-            } catch (final Exception e) {
-                LOGGER.error(e.getMessage(), e);
-            }
-        }
+    private void createRoutes() {
+        port(1500);
+
+        path("/api/v1", () -> {
+            get("/lights", map((req, res) -> resource.getLights(req)));
+        });
+
+        get("*", map((req, res) -> resource.error()));
+    }
+
+
+    private Route map(Converter c) {
+        return (req, res) -> c.convert(req, res).handle(req,res);
+    }
+
+    private interface Converter {
+        Route convert(Request req, Response res);
     }
 
     public static void main(String[] args) {

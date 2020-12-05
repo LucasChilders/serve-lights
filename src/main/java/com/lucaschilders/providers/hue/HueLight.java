@@ -92,6 +92,18 @@ public class HueLight extends Light {
         }
     }
 
+    @JsonIgnore
+    @Override
+    public String getId() {
+        return this.id;
+    }
+
+    @JsonIgnore
+    @Override
+    public String getName() {
+        return this.name;
+    }
+
     /**
      * {@inheritDoc}
      */

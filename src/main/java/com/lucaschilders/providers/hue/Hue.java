@@ -6,7 +6,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
-import com.lucaschilders.pojos.Light;
 import com.lucaschilders.providers.Provider;
 import com.lucaschilders.util.ConfigPath;
 import com.lucaschilders.util.URIBuilder;
@@ -100,6 +99,9 @@ public class Hue extends Provider<HueConfig, HueLight> {
         return lights;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     public HueLight getLight(final String id) throws AuthenticationException, IOException, InterruptedException {
         final URI uri = new URIBuilder.Builder()
                 .withHost(this.config.internalIp)

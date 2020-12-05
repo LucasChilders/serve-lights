@@ -6,6 +6,7 @@ public class ServeLightModule extends AbstractModule {
     @Override
     protected void configure() {
         install(new ConfigModule());
+        install(new ApiModule());
         install(new LightModule());
     }
 }

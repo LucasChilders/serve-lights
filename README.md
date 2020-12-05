@@ -32,4 +32,7 @@ stored. Configuration files are named `<provider>.yaml`. The provider is the low
 ```diff
 + abstract provider setup
 - web server to control lights
+- cache list of lights
+- tests
+- documentation for contributing
 ```

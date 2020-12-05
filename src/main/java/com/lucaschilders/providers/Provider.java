@@ -1,14 +1,25 @@
 package com.lucaschilders.providers;
 
 import com.lucaschilders.pojos.Light;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import javax.naming.AuthenticationException;
 import java.util.Set;
 
 public abstract class Provider<T extends ProviderConfig, L extends Light> {
+    private static final Logger LOGGER = LoggerFactory.getLogger(Provider.class);
+
     protected final T config;
 
-    public Provider(final T config) {
+    public Provider(final T config) throws AuthenticationException {
         this.config = config;
+        try {
+            setup();
+        } catch (final Exception e) {
+            throw new AuthenticationException(String.format("Failed to authenticate [%s], check the configuration.",
+                    this.getClass().getSimpleName()));
+        }
     }
 
     /**
@@ -27,7 +38,7 @@ public abstract class Provider<T extends ProviderConfig, L extends Light> {
 
     /**
      * Returns information about a single light for a given id
-     * @param id id of the light
+     * @param id
      * @return Light
      * @throws Exception
      */
@@ -54,6 +65,16 @@ public abstract class Provider<T extends ProviderConfig, L extends Light> {
      * Sets the state of the light
      * @param id
      * @param state true / false == on / off
+     * @throws Exception
      */
     public abstract void setLightPowerState(final String id, final boolean state) throws Exception;
+
+    /**
+     * Toggles the current power state of the light
+     * @param id
+     * @throws Exception
+     */
+    public void toggleLightPowerState(final String id) throws Exception {
+        this.setLightPowerState(id, this.getLight(id).getPowerState());
+    }
 }

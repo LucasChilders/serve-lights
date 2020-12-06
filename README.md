@@ -50,7 +50,7 @@ documentation can be found on [Postman](https://documenter.getpostman.com/view/3
 - logging
 - cache list of lights
 - tests
-  - verify providers have guice @provides methods 
++ verify providers have guice @provides methods 
 + ci build to push tagged releases
 - documentation for contributing
 + API endpoint documentation

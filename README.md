@@ -22,6 +22,14 @@ i.e. Hue.java ->`hue.lifx`. Each provider has its own unique configurations, che
 linked below under [Provider Support](#provider-support). All configurations must also define the values in 
 [README-provider.md](README-provider.md).
 
+## Running
+
+Requires Java 11 or higher to start. Startup with: 
+```
+java -Dconfig_dir="<configuration_files_path>" -jar serve-lights.jar
+```
+
+
 ## API
 
 This project uses _unauthenticated_ endpoints that clients on your local network can leverage to control lights. Do 
@@ -53,6 +61,7 @@ documentation can be found on [Postman](https://documenter.getpostman.com/view/3
 + verify providers have guice @provides methods 
 + ci build to push tagged releases
 - documentation for contributing
+- bundle default properties in release
 + API endpoint documentation
 + refactor api into paths that make sense
 ```

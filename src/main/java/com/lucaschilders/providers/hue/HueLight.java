@@ -39,6 +39,7 @@ public class HueLight extends Light {
         public long hue;
         public long sat;
         public String effect;
+        @JsonProperty("xy")
         public List<Double> xy;
         public long ct;
         public String alert;
@@ -123,6 +124,22 @@ public class HueLight extends Light {
     @JsonIgnore
     public int getBrightness() {
         return this.state.bri;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @JsonIgnore
+    public String getColorMode() {
+        return this.state.colorMode;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @JsonIgnore
+    public int getTemperature() {
+        return (int) (1_000_000 / this.state.ct);
     }
 
     /**

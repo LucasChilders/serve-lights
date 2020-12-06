@@ -46,4 +46,6 @@ linked below under [Provider Support](#provider-support). All configurations mus
   - verify providers have guice @provides methods 
 + ci build to push tagged releases
 - documentation for contributing
+- API endpoint documentation
+- refactor api into paths that make sense
 ```

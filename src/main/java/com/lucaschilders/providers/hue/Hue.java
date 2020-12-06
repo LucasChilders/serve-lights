@@ -4,8 +4,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
+import com.lucaschilders.pojos.RGB;
 import com.lucaschilders.providers.Provider;
 import com.lucaschilders.util.ProviderName;
 import com.lucaschilders.util.URIBuilder;
@@ -20,6 +22,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Map;
 import java.util.Set;
 
 public class Hue extends Provider<HueConfig, HueLight> {
@@ -119,8 +122,8 @@ public class Hue extends Provider<HueConfig, HueLight> {
     public void setBrightness(final String id, final int brightness) throws InterruptedException, IOException, AuthenticationException {
         Preconditions.checkArgument(brightness >= 0 && brightness <= 100);
         final HueLight light = getLight(id);
-        light.state.bri = brightness;
-        makeStateChange(id, light.state);
+        light.state.bri = (int) ((double) brightness * 2.55);
+        makeStateChange(id, "bri", light.state.bri);
     }
 
     /**
@@ -129,7 +132,27 @@ public class Hue extends Provider<HueConfig, HueLight> {
     public void setLightPowerState(final String id, final boolean state) throws InterruptedException, IOException, AuthenticationException {
         final HueLight light = getLight(id);
         light.state.on = state;
-        makeStateChange(id, light.state);
+        makeStateChange(id, "on", light.state.on);
+    }
+
+    /**
+     * {@inheritDoc}
+     * Philips Hue uses Mirek units to determine temperature. Hue supports 153 - 500 Mirek.
+     * Mirek = 1,000,000 / Kelvin
+     */
+    public void setTemperature(final String id, final int kelvin) throws Exception {
+        final HueLight light = getLight(id);
+        light.state.ct = 1_000_000 / kelvin;
+        makeStateChange(id, "ct", light.state.ct);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public void setRGB(final String id, final RGB rgb) throws Exception {
+        final HueLight light = getLight(id);
+        light.state.xy = rgb.toXY();
+        makeStateChange(id, "xy", light.state.xy);
     }
 
     /**
@@ -192,7 +215,7 @@ public class Hue extends Provider<HueConfig, HueLight> {
         return HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString()).body();
     }
 
-    private void makeStateChange(final String id, final HueLight.State state) throws IOException, InterruptedException {
+    private void makeStateChange(final String id, final String key, final Object value) throws IOException, InterruptedException {
         final URI uri = new URIBuilder.Builder()
                 .withHost(this.config.internalIp)
                 .withProtocol(URIBuilder.Protocol.HTTP)
@@ -203,6 +226,8 @@ public class Hue extends Provider<HueConfig, HueLight> {
                 .withSegment("state")
                 .build().getUri();
 
+        final Map<String, Object> state = Maps.newHashMap();
+        state.put(key, value);
         getPutResponseBody(uri, new ObjectMapper().writeValueAsString(state));
     }
 

@@ -20,6 +20,10 @@ public class RGB {
         return new RGB(red, green, blue);
     }
 
+    public static RGB of(final String[] rgb) {
+        return RGB.of(Integer.parseInt(rgb[0]), Integer.parseInt(rgb[1]), Integer.parseInt(rgb[2]));
+    }
+
     final String toHex() {
         LOGGER.error("Method not implemented.");
         return "";

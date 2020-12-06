@@ -1,6 +1,7 @@
 package com.lucaschilders.providers;
 
 import com.lucaschilders.pojos.Light;
+import com.lucaschilders.pojos.RGB;
 import com.lucaschilders.util.YAMLUtils;
 
 import java.util.Set;
@@ -49,6 +50,21 @@ public abstract class Provider<T extends ProviderConfig, L extends Light> {
      * @throws Exception on failure to update brightness
      */
     public abstract void setBrightness(final String id, final int brightness) throws Exception;
+
+    /**
+     * Set the color temperature with Kelvin units. Higher is warmer.
+     * @param kelvin temperature where thousands place is highest denominator (6000).
+     * @throws Exception throws on error
+     */
+    public abstract void setTemperature(final String id, final int kelvin) throws Exception;
+
+    /**
+     * Set the RGB color value of the light
+     * @param id
+     * @param rgb
+     * @throws Exception throws if this light does not support RGB
+     */
+    public abstract void setRGB(final String id, final RGB rgb) throws Exception;
 
     /**
      * Sets the state of the light

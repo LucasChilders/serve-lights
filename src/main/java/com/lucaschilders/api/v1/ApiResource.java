@@ -1,5 +1,6 @@
 package com.lucaschilders.api.v1;
 
+import com.lucaschilders.pojos.RGB;
 import com.lucaschilders.util.ProviderName;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +17,8 @@ public class ApiResource {
     public static String ID = "id";
     public static String STATE = "state";
     public static String BRIGHTNESS = "brightness";
+    public static String COLOR = "rgb";
+    public static String TEMP = "temp";
 
     private final ApiStore store;
 
@@ -85,6 +88,48 @@ public class ApiResource {
         }
     }
 
+    public Route setRGBAll(final Request request) {
+        ApiResource.logRequest(request);
+        try {
+            store.setRGBAll(RGB.of(request.queryParams(COLOR).split(",")));
+            return ApiResource.ok();
+        } catch (final Exception e) {
+            return bad(500, e.getMessage());
+        }
+    }
+
+    public Route setRGBSingle(final Request request) {
+        ApiResource.logRequest(request);
+        try {
+            store.setRGBSingle(ProviderName.classify(request.queryParams(PROVIDER)),
+                    request.queryParams(ID), RGB.of(request.queryParams(COLOR).split(",")));
+            return ApiResource.ok();
+        } catch (final Exception e) {
+            return bad(500, e.getMessage(), e.getCause().getMessage());
+        }
+    }
+
+    public Route setTemperatureAll(final Request request) {
+        ApiResource.logRequest(request);
+        try {
+            store.setTemperatureAll(Integer.parseInt(request.queryParams(TEMP)));
+            return ApiResource.ok();
+        } catch (final Exception e) {
+            return bad(500, e.getMessage());
+        }
+    }
+
+    public Route setTemperatureSingle(final Request request) {
+        ApiResource.logRequest(request);
+        try {
+            store.setTemperatureSingle(ProviderName.classify(request.queryParams(PROVIDER)),
+                    request.queryParams(ID), Integer.parseInt(request.queryParams(TEMP)));
+            return ApiResource.ok();
+        } catch (final Exception e) {
+            return bad(500, e.getMessage(), e.getCause().getMessage());
+        }
+    }
+
     public Route error() {
         return ApiResource.bad(404, "Endpoint not found.");
     }
@@ -105,11 +150,11 @@ public class ApiResource {
         };
     }
 
-    private static Route bad(final int code, final String body) {
+    private static Route bad(final int code, final String... body) {
         return (req, res) -> {
             res.status(code);
             res.type("application/json");
-            return body;
+            return String.join("\n", body);
         };
     }
 

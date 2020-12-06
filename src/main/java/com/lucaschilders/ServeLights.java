@@ -62,6 +62,10 @@ public class ServeLights {
             post("/setStateSingle", map((req, res) -> resource.setStateSingle(req)));
             post("/setBrightnessAll", map((req, res) -> resource.setBrightnessAll(req)));
             post("/setBrightnessSingle", map((req, res) -> resource.setBrightnessSingle(req)));
+            post("/setRGBAll", map((req, res) -> resource.setRGBAll(req)));
+            post("/setRGBSingle", map((req, res) -> resource.setRGBSingle(req)));
+            post("/setTemperatureAll", map((req, res) -> resource.setTemperatureAll(req)));
+            post("/setTemperatureSingle", map((req, res) -> resource.setTemperatureSingle(req)));
         });
 
         get("*", map((req, res) -> resource.error()));

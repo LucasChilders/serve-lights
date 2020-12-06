@@ -42,11 +42,24 @@ public abstract class Light {
     public abstract ProviderName getProviderName();
 
     /**
+     * @return the current color mode of the light
+     */
+    @JsonIgnore
+    public abstract String getColorMode();
+
+    /**
      * Return the RGB value with value ranges between 0 and 255
      * @return RGB
      */
     @JsonIgnore
     public abstract RGB getRGB();
+
+    /**
+     * Return the Kelvin temperature value of the light.
+     * @return int temperature in Kelvin
+     */
+    @JsonIgnore
+    public abstract int getTemperature();
 
     @JsonIgnore
     public JSONObject getJson() {
@@ -56,6 +69,7 @@ public abstract class Light {
         response.put("name", this.getName());
         response.put("on", String.valueOf(this.getPowerState()));
         response.put("brightness", String.valueOf(this.getBrightness()));
+        response.put("colormode", String.valueOf(this.getColorMode()));
         return new JSONObject(response);
     }
 }

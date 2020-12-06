@@ -4,6 +4,7 @@ import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.google.inject.name.Named;
 import com.lucaschilders.pojos.Light;
+import com.lucaschilders.pojos.RGB;
 import com.lucaschilders.providers.Provider;
 import com.lucaschilders.util.ProviderName;
 import org.json.JSONArray;
@@ -115,7 +116,7 @@ public class ApiStore {
     }
 
     /**
-     * Update the state of all lights
+     * Update the brightness of all lights
      * @param brightness between 0 and 100
      */
     protected void setBrightnessAll(final int brightness) {
@@ -154,7 +155,99 @@ public class ApiStore {
         try {
             providers.get(providerName).setBrightness(id, brightness);
         } catch (final Exception e) {
-            final String message = String.format("Failed to fetch information for %s:%s",
+            final String message = String.format("Failed to update brightness for %s:%s",
+                    providerName.getName(), id);
+            LOGGER.error(message, e);
+            throw new RuntimeException(message, e);
+        }
+    }
+
+    /**
+     * Update the rgb of all lights
+     * @param rgb to set
+     */
+    protected void setRGBAll(final RGB rgb) {
+        Preconditions.checkNotNull(rgb);
+        for (final Map.Entry<ProviderName, Provider<?, ?>> entry : providers.entrySet()) {
+            try {
+                for (final Light light : entry.getValue().getLights()) {
+                    try {
+                        entry.getValue().setRGB(light.getId(), rgb);
+                    } catch (final Exception e) {
+                        final String message = String.format("Failed to update RGB for %s",
+                                entry.getValue().getClass().getSimpleName());
+                        LOGGER.error(message, e);
+                        throw new RuntimeException(message, e);
+                    }
+                }
+            } catch (final Exception e) {
+                final String message = String.format("Failed to fetch information for %s",
+                        entry.getValue().getClass().getSimpleName());
+                LOGGER.error(message, e);
+                throw new RuntimeException(message, e);
+            }
+        }
+    }
+
+    /**
+     * Update the rgb of a single light
+     * @param providerName target provider
+     * @param id target light id
+     * @param rgb to set
+     */
+    protected void setRGBSingle(final ProviderName providerName, final String id, final RGB rgb) {
+        Preconditions.checkNotNull(providerName);
+        Preconditions.checkNotNull(id);
+        Preconditions.checkNotNull(rgb);
+        try {
+            providers.get(providerName).setRGB(id, rgb);
+        } catch (final Exception e) {
+            final String message = String.format("Failed to update RGB for %s:%s",
+                    providerName.getName(), id);
+            LOGGER.error(message, e);
+            throw new RuntimeException(message, e);
+        }
+    }
+
+    /**
+     * Update the temperature of all lights
+     * @param temperature to set
+     */
+    protected void setTemperatureAll(final int temperature) {
+        for (final Map.Entry<ProviderName, Provider<?, ?>> entry : providers.entrySet()) {
+            try {
+                for (final Light light : entry.getValue().getLights()) {
+                    try {
+                        entry.getValue().setTemperature(light.getId(), temperature);
+                    } catch (final Exception e) {
+                        final String message = String.format("Failed to update temperature for %s",
+                                entry.getValue().getClass().getSimpleName());
+                        LOGGER.error(message, e);
+                        throw new RuntimeException(message, e);
+                    }
+                }
+            } catch (final Exception e) {
+                final String message = String.format("Failed to fetch information for %s",
+                        entry.getValue().getClass().getSimpleName());
+                LOGGER.error(message, e);
+                throw new RuntimeException(message, e);
+            }
+        }
+    }
+
+    /**
+     * Update the temperature of a single light
+     * @param providerName target provider
+     * @param id target light id
+     * @param temperature to set
+     */
+    protected void setTemperatureSingle(final ProviderName providerName, final String id, final int temperature) {
+        Preconditions.checkNotNull(providerName);
+        Preconditions.checkNotNull(id);
+        try {
+            providers.get(providerName).setTemperature(id, temperature);
+        } catch (final Exception e) {
+            final String message = String.format("Failed to update temperature for %s:%s",
                     providerName.getName(), id);
             LOGGER.error(message, e);
             throw new RuntimeException(message, e);

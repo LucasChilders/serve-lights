@@ -4,8 +4,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
+import com.lucaschilders.pojos.RGB;
 import com.lucaschilders.providers.Provider;
 import com.lucaschilders.util.ProviderName;
 import com.lucaschilders.util.URIBuilder;
@@ -20,6 +23,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class Hue extends Provider<HueConfig, HueLight> {
@@ -119,8 +124,8 @@ public class Hue extends Provider<HueConfig, HueLight> {
     public void setBrightness(final String id, final int brightness) throws InterruptedException, IOException, AuthenticationException {
         Preconditions.checkArgument(brightness >= 0 && brightness <= 100);
         final HueLight light = getLight(id);
-        light.state.bri = brightness;
-        makeStateChange(id, light.state);
+        light.state.bri = (int) ((double) brightness * 2.55);
+        makeStateChange(id, "bri", light.state.bri);
     }
 
     /**
@@ -129,7 +134,48 @@ public class Hue extends Provider<HueConfig, HueLight> {
     public void setLightPowerState(final String id, final boolean state) throws InterruptedException, IOException, AuthenticationException {
         final HueLight light = getLight(id);
         light.state.on = state;
-        makeStateChange(id, light.state);
+        makeStateChange(id, "on", light.state.on);
+    }
+
+    /**
+     * {@inheritDoc}
+     * Philips Hue uses Mirek units to determine temperature. Hue supports 153 - 500 Mirek.
+     * Mirek = 1,000,000 / Kelvin
+     */
+    public void setTemperature(final String id, final int kelvin) throws Exception {
+        final HueLight light = getLight(id);
+        light.state.ct = 1_000_000 / kelvin;
+        makeStateChange(id, "ct", light.state.ct);
+    }
+
+    /**
+     * {@inheritDoc}
+     * Philips Hue doesn't use RGB colors, but rather an X, Y coordinate that corresponds to a location on the
+     * chromaticity diagram. See https://gist.github.com/popcorn245/30afa0f98eea1c2fd34d
+     */
+    public void setRGB(final String id, final RGB rgb) throws Exception {
+        float red = (float) rgb.red / 255f;
+        float green = (float) rgb.green / 255f;
+        float blue = (float) rgb.blue / 255f;
+
+        float redN = (red > 0.04045f) ? (float) Math.pow((red + 0.055f) / (1.0f + 0.055f), 2.4f) : (red / 12.92f);
+        float greenN = (green > 0.04045f) ? (float) Math.pow((green + 0.055f) / (1.0f + 0.055f), 2.4f) : (green / 12.92f);
+        float blueN = (blue > 0.04045f) ? (float) Math.pow((blue + 0.055f) / (1.0f + 0.055f), 2.4f) : (blue / 12.92f);
+
+        float X = (redN * 0.649926f) + (greenN * 0.103455f) + (blueN * 0.197109f);
+        float Y = (redN * 0.234327f) + (greenN * 0.743075f) + (blueN * 0.022598f);
+        float Z = (redN * 0.0000000f) + (greenN * 0.053077f) + (blueN * 1.035763f);
+
+        double x = X / (X + Y + Z);
+        double y = Y / (X + Y + Z);
+
+        final List<Double> xy = Lists.newArrayList();
+        xy.add(x);
+        xy.add(y);
+
+        final HueLight light = getLight(id);
+        light.state.xy = xy;
+        makeStateChange(id, "xy", light.state.xy);
     }
 
     /**
@@ -192,7 +238,7 @@ public class Hue extends Provider<HueConfig, HueLight> {
         return HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString()).body();
     }
 
-    private void makeStateChange(final String id, final HueLight.State state) throws IOException, InterruptedException {
+    private void makeStateChange(final String id, final String key, final Object value) throws IOException, InterruptedException {
         final URI uri = new URIBuilder.Builder()
                 .withHost(this.config.internalIp)
                 .withProtocol(URIBuilder.Protocol.HTTP)
@@ -203,6 +249,8 @@ public class Hue extends Provider<HueConfig, HueLight> {
                 .withSegment("state")
                 .build().getUri();
 
+        final Map<String, Object> state = Maps.newHashMap();
+        state.put(key, value);
         getPutResponseBody(uri, new ObjectMapper().writeValueAsString(state));
     }
 

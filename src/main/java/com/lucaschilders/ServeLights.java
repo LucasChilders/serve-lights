@@ -56,24 +56,28 @@ public class ServeLights {
         port(this.globalConfig.port);
 
         path("/api/v1", () -> {
+            get("/info", map((req, res) -> resource.getLights(req)));
             path("/info", () -> {
-                get("/all", map((req, res) -> resource.getLights(req)));
                 get("/:provider/:id", map((req, res) -> resource.getLight(req)));
             });
+
+            post("/state", map((req, res) -> resource.setStateAll(req)));
             path("/state", () -> {
-                post("/all", map((req, res) -> resource.setStateAll(req)));
                 post("/:provider/:id", map((req, res) -> resource.setState(req)));
             });
+
+            post("/brightness", map((req, res) -> resource.setBrightnessAll(req)));
             path("/brightness", () -> {
-                post("/all", map((req, res) -> resource.setBrightnessAll(req)));
                 post("/:provider/:id", map((req, res) -> resource.setBrightness(req)));
             });
+
+            post("/rgb", map((req, res) -> resource.setRGBAll(req)));
             path("/rgb", () -> {
-                post("/all", map((req, res) -> resource.setRGBAll(req)));
                 post("/:provider/:id", map((req, res) -> resource.setRGB(req)));
             });
+
+            post("/temperature", map((req, res) -> resource.setTemperatureAll(req)));
             path("/temperature", () -> {
-                post("/all", map((req, res) -> resource.setTemperatureAll(req)));
                 post("/:provider/:id", map((req, res) -> resource.setTemperature(req)));
             });
         });

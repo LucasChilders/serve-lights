@@ -22,6 +22,13 @@ i.e. Hue.java ->`hue.lifx`. Each provider has its own unique configurations, che
 linked below under [Provider Support](#provider-support). All configurations must also define the values in 
 [README-provider.md](README-provider.md).
 
+## API
+
+This project uses _unauthenticated_ endpoints that clients on your local network can leverage to control lights. Do 
+__not__ expose the project on publicly accessible ports on your network! You've been warned. The endpoints and their 
+documentation can be found on [Postman](https://documenter.getpostman.com/view/3878526/TVmQdb4j#a483ad1e-94a5-46be-9415-bf0e88368c8a).
+
+
 <a name="provider-support"></a>
 ## Provider Support
 
@@ -46,6 +53,6 @@ linked below under [Provider Support](#provider-support). All configurations mus
   - verify providers have guice @provides methods 
 + ci build to push tagged releases
 - documentation for contributing
-- API endpoint documentation
-- refactor api into paths that make sense
++ API endpoint documentation
++ refactor api into paths that make sense
 ```

@@ -16,9 +16,22 @@ public class LightModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        bind(Hue.class).in(Scopes.SINGLETON);
+        // Bind the providers, new providers wont need to touch anything
+        for (final ProviderName provider : ProviderName.values()) {
+            if (!provider.equals(ProviderName.GLOBAL)) {
+                if (provider.getClazz() == null) {
+                    throw new RuntimeException(String.format("Cannot find provider for [%s]!", provider.getName()));
+                } else {
+                    bind(provider.getClazz()).in(Scopes.SINGLETON);
+                }
+            }
+        }
     }
 
+    /**
+     * New providers must add the class as an argument to this method.
+     * @param hue
+     */
     @Singleton
     @Provides
     @Named("providers")

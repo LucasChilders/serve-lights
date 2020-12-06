@@ -33,6 +33,4 @@ public class ConfigModule extends AbstractModule {
         LOGGER.info("Loading [{}] for Hue", ProviderName.HUE.getPath());
         return yamlUtils.readProviderConfig(ProviderName.HUE, HueConfig.class);
     }
-
-
 }

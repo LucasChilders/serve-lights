@@ -56,16 +56,26 @@ public class ServeLights {
         port(this.globalConfig.port);
 
         path("/api/v1", () -> {
-            get("/lights", map((req, res) -> resource.getLights(req)));
-            post("/light", map((req, res) -> resource.getLight(req)));
-            post("/setStateAll", map((req, res) -> resource.setStateAll(req)));
-            post("/setStateSingle", map((req, res) -> resource.setStateSingle(req)));
-            post("/setBrightnessAll", map((req, res) -> resource.setBrightnessAll(req)));
-            post("/setBrightnessSingle", map((req, res) -> resource.setBrightnessSingle(req)));
-            post("/setRGBAll", map((req, res) -> resource.setRGBAll(req)));
-            post("/setRGBSingle", map((req, res) -> resource.setRGBSingle(req)));
-            post("/setTemperatureAll", map((req, res) -> resource.setTemperatureAll(req)));
-            post("/setTemperatureSingle", map((req, res) -> resource.setTemperatureSingle(req)));
+            path("/info", () -> {
+                get("/all", map((req, res) -> resource.getLights(req)));
+                get("/:provider/:id", map((req, res) -> resource.getLight(req)));
+            });
+            path("/state", () -> {
+                post("/all", map((req, res) -> resource.setStateAll(req)));
+                post("/:provider/:id", map((req, res) -> resource.setState(req)));
+            });
+            path("/brightness", () -> {
+                post("/all", map((req, res) -> resource.setBrightnessAll(req)));
+                post("/:provider/:id", map((req, res) -> resource.setBrightness(req)));
+            });
+            path("/rgb", () -> {
+                post("/all", map((req, res) -> resource.setRGBAll(req)));
+                post("/:provider/:id", map((req, res) -> resource.setRGB(req)));
+            });
+            path("/temperature", () -> {
+                post("/all", map((req, res) -> resource.setTemperatureAll(req)));
+                post("/:provider/:id", map((req, res) -> resource.setTemperature(req)));
+            });
         });
 
         get("*", map((req, res) -> resource.error()));

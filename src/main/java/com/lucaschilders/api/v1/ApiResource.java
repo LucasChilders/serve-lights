@@ -39,8 +39,8 @@ public class ApiResource {
     public Route getLight(final Request request) {
         ApiResource.logRequest(request);
         try {
-            return ApiResource.ok(store.getLight(ProviderName.classify(request.queryParams(PROVIDER)),
-                    request.queryParams(ID)));
+            return ApiResource.ok(store.getLight(ProviderName.classify(request.params(PROVIDER)),
+                    request.params(ID)));
         } catch (final Exception e) {
             return bad(500, e.getMessage());
         }
@@ -56,11 +56,11 @@ public class ApiResource {
         }
     }
 
-    public Route setStateSingle(final Request request) {
+    public Route setState(final Request request) {
         ApiResource.logRequest(request);
         try {
-            store.setStateSingle(ProviderName.classify(request.queryParams(PROVIDER)),
-                    request.queryParams(ID), request.queryParams(STATE));
+            store.setStateSingle(ProviderName.classify(request.params(PROVIDER)),
+                    request.params(ID), request.queryParams(STATE));
             return ApiResource.ok();
         } catch (final Exception e) {
             return bad(500, e.getMessage());
@@ -77,11 +77,11 @@ public class ApiResource {
         }
     }
 
-    public Route setBrightnessSingle(final Request request) {
+    public Route setBrightness(final Request request) {
         ApiResource.logRequest(request);
         try {
-            store.setBrightnessSingle(ProviderName.classify(request.queryParams(PROVIDER)),
-                    request.queryParams(ID), Integer.parseInt(request.queryParams(BRIGHTNESS)));
+            store.setBrightnessSingle(ProviderName.classify(request.params(PROVIDER)),
+                    request.params(ID), Integer.parseInt(request.queryParams(BRIGHTNESS)));
             return ApiResource.ok();
         } catch (final Exception e) {
             return bad(500, e.getMessage());
@@ -98,11 +98,11 @@ public class ApiResource {
         }
     }
 
-    public Route setRGBSingle(final Request request) {
+    public Route setRGB(final Request request) {
         ApiResource.logRequest(request);
         try {
-            store.setRGBSingle(ProviderName.classify(request.queryParams(PROVIDER)),
-                    request.queryParams(ID), RGB.of(request.queryParams(COLOR).split(",")));
+            store.setRGBSingle(ProviderName.classify(request.params(PROVIDER)),
+                    request.params(ID), RGB.of(request.queryParams(COLOR).split(",")));
             return ApiResource.ok();
         } catch (final Exception e) {
             return bad(500, e.getMessage(), e.getCause().getMessage());
@@ -119,11 +119,11 @@ public class ApiResource {
         }
     }
 
-    public Route setTemperatureSingle(final Request request) {
+    public Route setTemperature(final Request request) {
         ApiResource.logRequest(request);
         try {
-            store.setTemperatureSingle(ProviderName.classify(request.queryParams(PROVIDER)),
-                    request.queryParams(ID), Integer.parseInt(request.queryParams(TEMP)));
+            store.setTemperatureSingle(ProviderName.classify(request.params(PROVIDER)),
+                    request.params(ID), Integer.parseInt(request.queryParams(TEMP)));
             return ApiResource.ok();
         } catch (final Exception e) {
             return bad(500, e.getMessage(), e.getCause().getMessage());
@@ -159,7 +159,11 @@ public class ApiResource {
     }
 
     private static void logRequest(final Request request) {
+        final StringBuilder params = new StringBuilder();
+        for (final String param : request.queryParams()) {
+            params.append(String.format("%s: %s", param, request.queryParams(param)));
+        }
         LOGGER.info("Request from {}:{}{} at {}. Query params: [{}].", request.ip(), request.port(), request.uri(),
-                new Date(), String.join(", ", request.queryParams()));
+                new Date(), params);
     }
 }

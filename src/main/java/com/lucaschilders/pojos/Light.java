@@ -3,6 +3,7 @@ package com.lucaschilders.pojos;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Maps;
 import com.lucaschilders.util.ProviderName;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.util.Map;
@@ -63,13 +64,14 @@ public abstract class Light {
 
     @JsonIgnore
     public JSONObject getJson() {
-        final Map<String, String> response = Maps.newHashMap();
+        final Map<String, Object> response = Maps.newHashMap();
         response.put("provider", this.getProviderName().getName());
         response.put("id", this.getId());
         response.put("name", this.getName());
         response.put("on", String.valueOf(this.getPowerState()));
         response.put("brightness", String.valueOf(this.getBrightness()));
-        response.put("colormode", String.valueOf(this.getColorMode()));
+        response.put("rgb", new JSONArray(this.getRGB().toString()));
+        response.put("temperature", String.valueOf(this.getTemperature()));
         return new JSONObject(response);
     }
 }

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
@@ -23,7 +22,6 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -150,31 +148,10 @@ public class Hue extends Provider<HueConfig, HueLight> {
 
     /**
      * {@inheritDoc}
-     * Philips Hue doesn't use RGB colors, but rather an X, Y coordinate that corresponds to a location on the
-     * chromaticity diagram. See https://gist.github.com/popcorn245/30afa0f98eea1c2fd34d
      */
     public void setRGB(final String id, final RGB rgb) throws Exception {
-        float red = (float) rgb.red / 255f;
-        float green = (float) rgb.green / 255f;
-        float blue = (float) rgb.blue / 255f;
-
-        float redN = (red > 0.04045f) ? (float) Math.pow((red + 0.055f) / (1.0f + 0.055f), 2.4f) : (red / 12.92f);
-        float greenN = (green > 0.04045f) ? (float) Math.pow((green + 0.055f) / (1.0f + 0.055f), 2.4f) : (green / 12.92f);
-        float blueN = (blue > 0.04045f) ? (float) Math.pow((blue + 0.055f) / (1.0f + 0.055f), 2.4f) : (blue / 12.92f);
-
-        float X = (redN * 0.649926f) + (greenN * 0.103455f) + (blueN * 0.197109f);
-        float Y = (redN * 0.234327f) + (greenN * 0.743075f) + (blueN * 0.022598f);
-        float Z = (redN * 0.0000000f) + (greenN * 0.053077f) + (blueN * 1.035763f);
-
-        double x = X / (X + Y + Z);
-        double y = Y / (X + Y + Z);
-
-        final List<Double> xy = Lists.newArrayList();
-        xy.add(x);
-        xy.add(y);
-
         final HueLight light = getLight(id);
-        light.state.xy = xy;
+        light.state.xy = rgb.toXY();
         makeStateChange(id, "xy", light.state.xy);
     }
 
